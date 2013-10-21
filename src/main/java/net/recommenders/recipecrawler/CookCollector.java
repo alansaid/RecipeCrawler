@@ -66,7 +66,7 @@ public class CookCollector {
         String baseURL = "http://allrecipes.com/cook/";
         int len = baseURL.length();
         Document doc = null;
-
+        System.out.println("Starting user crawl");
         for(int page = 1; page <= 8585; page++){
             StringBuffer userIDs = new StringBuffer();
             double randomSleepTime = Math.random() * 5678 + 1876;
@@ -104,7 +104,12 @@ public class CookCollector {
                 userIDs.setLength(0);
                 System.out.println("on page: " + page);
             }
+            if(page == 8585){
+                writeUsers(userIDs);
+                System.out.println("Final users crawled");
+            }
         }
+
         return true;
     }
 
