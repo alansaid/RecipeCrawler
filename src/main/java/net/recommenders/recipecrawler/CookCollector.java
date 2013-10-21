@@ -67,12 +67,13 @@ public class CookCollector {
         int len = baseURL.length();
         Document doc = null;
         System.out.println("Starting user crawl");
+        int userCounter = 0;
+        StringBuffer userIDs = new StringBuffer();
         for(int page = 1; page <= 8585; page++){
-            StringBuffer userIDs = new StringBuffer();
-            double randomSleepTime = Math.random() * 5678 + 1876;
+            double randomSleepTime = Math.random() * 5678 + 3876;
             try {
                 Thread.sleep((int)randomSleepTime);
-                doc = Jsoup.connect(cooksURL+page).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(10000).get();
+                doc = Jsoup.connect(cooksURL+page).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(100000).get();
             } catch (IOException e) {
                 logger.error(e.getMessage());
                 e.printStackTrace();
@@ -94,15 +95,18 @@ public class CookCollector {
                     String url = link.attr("href");
                     String userID = url.substring(len, url.lastIndexOf('/'));
                     userIDs.append(userID+"\n");
+                    userCounter++;
                 } catch (NullPointerException e) {
                     logger.error(e.getMessage());
                     System.out.println("ERROR: wrong identifier");
                 }
             }
-            if(userIDs.length()> 10){
+            if(userCounter > 100){
                 writeUsers(userIDs);
                 userIDs.setLength(0);
-                System.out.println("on page: " + page);
+                userCounter = 0;
+                System.out.print("\rCrawling page: " + page);
+                System.out.flush();
             }
             if(page == 8585){
                 writeUsers(userIDs);
