@@ -99,7 +99,7 @@ public class CookCollector {
                     System.out.println("ERROR: wrong identifier");
                 }
             }
-            if(userIDs.length()> 1000){
+            if(userIDs.length()> 10){
                 writeUsers(userIDs);
                 userIDs.setLength(0);
                 System.out.println("on page: " + page);
