@@ -108,7 +108,7 @@ public class CookCollector {
                 System.out.print("\rCrawling page: " + page);
                 System.out.flush();
             }
-            if(page == 8585){
+            if(page == 8585 && userIDs.length() != 0){
                 writeUsers(userIDs);
                 System.out.println("Final users crawled");
             }
