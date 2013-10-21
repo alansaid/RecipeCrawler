@@ -17,7 +17,6 @@ import java.util.List;
  * User: alan
  * Date: 2013-10-21
  * Time: 14:49
- * To change this template use File | Settings | File Templates.
  */
 public class CookCollector {
     private final static Logger logger = LoggerFactory.getLogger(CookCollector.class);
