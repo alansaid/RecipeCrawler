@@ -95,7 +95,7 @@ public class ProfileCrawler {
                 break;
             int userID = Integer.parseInt(in.nextLine());
             parseProfile(userID);
-            if (bufferCounter > 20){
+            if (bufferCounter == 20){
                 writeProfiles(profiles);
                 profiles.setLength(0);
                 writeCooks(cooks);
@@ -154,7 +154,7 @@ public class ProfileCrawler {
             add("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2");
         }};
         Document doc = null;
-        double randomSleepTime = Math.random() * 3078 + 3176;
+        double randomSleepTime = Math.random() * 978 + 176;
 
         try {
             Thread.sleep((int)randomSleepTime);
