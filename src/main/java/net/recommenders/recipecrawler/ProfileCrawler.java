@@ -95,7 +95,7 @@ public class ProfileCrawler {
                 break;
             int userID = Integer.parseInt(in.nextLine());
             parseProfile(userID);
-            if (bufferCounter > 100){
+            if (bufferCounter > 20){
                 writeProfiles(profiles);
                 profiles.setLength(0);
                 writeCooks(cooks);
@@ -179,7 +179,8 @@ public class ProfileCrawler {
         String cookingInterests = (elements.get(3).text()+" ").split(":")[1].trim();
         String hobbies = (elements.get(4).text()+" ").split(":")[1].trim();
 
-        String user = name + "\t" +
+        String user = userID + "\t" +
+                name + "\t" +
                 homeTown + "\t" +
                 livingIn + "\t" +
                 memberSince + "\t" +
@@ -193,11 +194,11 @@ public class ProfileCrawler {
         boolean hasRecipeBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_divSharedRecipeBoxHeader > div.title").first().text().equals("Recipe Box 0 recipes");
         boolean hasReviewBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first().text().equals("Recipe Reviews");
         if(likesCooks)
-            cooks.append(userID+", "+likesCooks + "\n");
+            cooks.append(userID + "\n");
         if(hasRecipeBox)
-            recipes.append(userID + ", " + hasRecipeBox + "\n");
+            recipes.append(userID + "\n");
         if(hasReviewBox)
-            reviews.append(userID + ", " + hasReviewBox + "\n");
+            reviews.append(userID + "\n");
         profiles.append(user + "\n");
 //        System.out.println(user);
 //        System.out.println("likesCooks: " + likesCooks);
