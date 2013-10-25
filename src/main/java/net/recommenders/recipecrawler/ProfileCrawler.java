@@ -66,12 +66,10 @@ public class ProfileCrawler {
         int proUserID = 12256565;
         int inactiveUserID = 188406874;
         int emptyUserID = 13944900;
-//        pc.parseProfile(userID);
-//        pc.parseProfile(proUserID);
-//        pc.parseProfile(inactiveUserID);
-//        pc.parseProfile(emptyUserID);
+        int errUser = 13482741;
+        pc.parseProfile(errUser);
 
-        pc.parseProfiles(fromLine, toLine);
+//        pc.parseProfiles(fromLine, toLine);
 //        pc.parseProfile(10000003);
     }
 
@@ -192,7 +190,10 @@ public class ProfileCrawler {
 
         boolean likesCooks = !doc.select("a#ctl00_RightColumnTopPlaceHolder_ucCooksILike_lnkViewAll").isEmpty();
         boolean hasRecipeBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_divSharedRecipeBoxHeader > div.title").first().text().equals("Recipe Box 0 recipes");
-        boolean hasReviewBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first().text().equals("Recipe Reviews");
+        Element reviewBox = doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first();
+        boolean hasReviewBox = false;
+        if(reviewBox != null)
+            hasReviewBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first().text().equals("Recipe Reviews");
         if(likesCooks)
             cooks.append(userID + "\n");
         if(hasRecipeBox)
@@ -200,10 +201,10 @@ public class ProfileCrawler {
         if(hasReviewBox)
             reviews.append(userID + "\n");
         profiles.append(user + "\n");
-//        System.out.println(user);
-//        System.out.println("likesCooks: " + likesCooks);
-//        System.out.println("hasRecipes: " + hasRecipeBox);
-//        System.out.println("hasReviews: " + hasReviewBox);
+        System.out.println(user);
+        System.out.println("likesCooks: " + likesCooks);
+        System.out.println("hasRecipes: " + hasRecipeBox);
+        System.out.println("hasReviews: " + hasReviewBox);
     }
 
 
