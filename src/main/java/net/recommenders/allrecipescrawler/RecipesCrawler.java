@@ -1,5 +1,5 @@
 /**
- *  RecipesCrawler - a data crawler for allrecipes.com
+ *  RecipeCrawler - a data crawler for allrecipes.com
  *
  *         Copyright (C) 2013  Alan Said
  *
@@ -22,6 +22,7 @@ package net.recommenders.allrecipescrawler;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,36 +31,26 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
 /**
  * Created with IntelliJ IDEA.
  * User: alan
- * Date: 2013-10-21
- * Time: 14:27
- * To change this template use File | Settings | File Templates.
+ * Date: 2013-10-25
+ * Time: 13:59
  */
-public class ProfileCrawler {
-    private final static Logger logger = LoggerFactory.getLogger(ProfileCrawler.class);
+public class RecipesCrawler {
+    private final static Logger logger = LoggerFactory.getLogger(RecipesCrawler.class);
 
-    public static final String profileURL = "http://allrecipes.com/cook/";
-    public static final String reviewURL = "/reviews.aspx?Page=";
-    public static final String menuURL = "/menus.aspx?Page=";
-    public static final String blogURL = "/blog.aspx?Page=";
-    public static final String profileFile = "profiles.csv";
-    public static final String hasCooksFile = "hasCooks.csv";
-    public static final String hasReviewsFile = "hasReviews.csv";
-    public static final String hasRecipesFile = "hasRecipes.csv";
-    private StringBuffer profiles= new StringBuffer();
-    private StringBuffer recipes = new StringBuffer();
-    private StringBuffer cooks = new StringBuffer();
-    private StringBuffer reviews = new StringBuffer();
+    public static final String recipeURL = "/recipes.aspx?Page=";
+    public static final String baseURL = "http://allrecipes.com/cook/";
+    private StringBuffer recipesBuffer = new StringBuffer();
 
     public static void main(String[] args) {
-
         System.out.println("args[0] = fromLine \t (args[1] = toLine)");
-        System.out.println("When no arguments given, all of users.csv is read");
+        System.out.println("When no arguments given, all of hasRecipes.csv is read");
         int fromLine = 0;
         int toLine = 0;
         if(args.length != 0){
@@ -77,25 +68,22 @@ public class ProfileCrawler {
             }
             System.out.println("Reading from line " + fromLine + " to line " + toLine);
         }
-        ProfileCrawler pc = new ProfileCrawler();
-
-        int userID = 18114940;
-        int proUserID = 12256565;
-        int inactiveUserID = 188406874;
-        int emptyUserID = 13944900;
-        int errUser = 13482741;
-//        pc.parseProfile(errUser);
-
-        pc.parseProfiles(fromLine, toLine);
-//        pc.parseProfile(10000003);
+        RecipesCrawler rc = new RecipesCrawler();
+        int user1 = 169147;
+        int user2 = 15278401;
+        int user3 = 10160078;
+        int user4 = 13587363;
+//        rc.crawlRecipesByUser(user4);
+        rc.crawlRecipesByUserFromFile(fromLine, toLine);
     }
 
-    public boolean parseProfiles(int from, int to){
+
+    public boolean crawlRecipesByUserFromFile(int from, int to){
         int counter = 0;
         int bufferCounter = 0;
         Scanner in = null;
         try {
-            in = new Scanner(new File("users.csv"));
+            in = new Scanner(new File("hasRecipes.csv"));
         } catch (IOException e){
             logger.error(e.getMessage());
         }
@@ -109,36 +97,31 @@ public class ProfileCrawler {
             if(to != 0 && counter > to)
                 break;
             int userID = Integer.parseInt(in.nextLine());
-            parseProfile(userID);
-            if (bufferCounter == 20){
-                writeProfiles(profiles);
-                profiles.setLength(0);
-                writeCooks(cooks);
-                cooks.setLength(0);
-                writeRecipes(recipes);
-                recipes.setLength(0);
-                writeReviews(reviews);
-                reviews.setLength(0);
-                bufferCounter = 0;
-            }
             System.out.print("\rCrawling line: " + counter + "\t profileID: " + userID);
             System.out.flush();
+
+            crawlRecipesByUser(userID);
+            if (bufferCounter == 20){
+                writeRecipes(recipesBuffer);
+                recipesBuffer.setLength(0);
+
+                bufferCounter = 0;
+            }
             counter ++;
             bufferCounter ++;
         }
         System.out.println("\n");
         System.out.println("Crawled: " + (counter - from) + " cooks");
         if(bufferCounter > 0){
-            writeProfiles(profiles);
-            writeCooks(cooks);
-            writeRecipes(recipes);
-            writeReviews(reviews);
+            writeRecipes(recipesBuffer);
         }
         return true;
     }
 
 
-    public void parseProfile(int userID){
+
+    public boolean crawlRecipesByUser(int userID){
+        String recipesURL = baseURL+userID+recipeURL;
         List<String> userAgents = new ArrayList<String>() {{
             add("Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14");
             add("Mozilla/5.0 (Windows NT 6.0; rv:2.0) Gecko/20100101 Firefox/4.0 Opera 12.14");
@@ -169,75 +152,54 @@ public class ProfileCrawler {
             add("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2");
         }};
         Document doc = null;
-        double randomSleepTime = Math.random() * 978 + 176;
 
         try {
-            Thread.sleep((int)randomSleepTime);
-            doc = Jsoup.connect(profileURL + userID).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(100000).get();
+            doc = Jsoup.connect(recipesURL).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(100000).get();
         }
         catch (IOException e){
             e.printStackTrace();
         }
-        catch (InterruptedException ie){
-            logger.error(ie.getMessage());
-            ie.printStackTrace();
+        String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text();
+        int pages = 1;
+        if(!pageNums.isEmpty())
+            pages = (int)Math.ceil(Double.parseDouble(pageNums.substring(pageNums.indexOf("f")+2,pageNums.indexOf(")")).trim()) / 10);
+
+
+        for(int i = 1; i <= pages; i++){
+            if(i > 1){
+                try {
+                    doc = Jsoup.connect(recipesURL+i).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(100000).get();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+            Element recipe = doc.select("div.recipelistview-container > div.row").first();
+            Elements recipes = recipe.siblingElements();
+            recipes.add(recipe);
+            for(Element rec : recipes){
+                if(rec.hasClass("clear"))
+                    continue;
+                String url = rec.select("a.title").first().attr("href").replace("/detail.aspx", "");
+                String type = rec.select("li.recipe-list-type").text();
+                String overall = rec.select("div.rating-stars").first().select("meta[itemprop=ratingValue]").attr("content");
+                if(overall.equals("0"))
+                    overall = "";
+                String personal = rec.select("div.rating-stars").last().select("meta[itemprop=ratingValue]").attr("content");
+//                if(personal.equals("0"))
+//                    personal = "0";
+                String date = rec.select("li.recipe-list-added").text();
+                String user = userID + "\t" + url + "\t" + type + "\t" + overall + "\t" + personal + "\t" + date + "\t" + System.currentTimeMillis();
+//                System.out.println(user);
+             recipesBuffer.append(user + "\n");
+            }
         }
-        boolean proUser = !doc.select("a.proPill35x12").isEmpty();
-        String name = doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileDetails_cooksName_litName").text();
-        Element homeTownElem = doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileDetails_ucCooksLocation_HomeTownArea").first();
-        String homeTown = homeTownElem.select("span").text();
-
-        List<Element> elements = homeTownElem.siblingElements().subList(0,5);
-        String livingIn = (elements.get(0).text()+" ").split(":")[1].trim();
-        String memberSince= (elements.get(1).text()+" ").split(":")[1].trim();
-        String cookingLevel = (elements.get(2).text()+" ").split(":")[1].trim();
-        String cookingInterests = (elements.get(3).text()+" ").split(":")[1].trim();
-        String hobbies = (elements.get(4).text()+" ").split(":")[1].trim();
-
-        String user = userID + "\t" +
-                name + "\t" +
-                homeTown + "\t" +
-                livingIn + "\t" +
-                memberSince + "\t" +
-                cookingLevel + "\t" +
-                cookingInterests + "\t" +
-                hobbies + "\t" +
-                proUser + "\t" +
-                System.currentTimeMillis();
-
-        boolean likesCooks = !doc.select("a#ctl00_RightColumnTopPlaceHolder_ucCooksILike_lnkViewAll").isEmpty();
-        boolean hasRecipeBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_divSharedRecipeBoxHeader > div.title").first().text().equals("Recipe Box 0 recipes");
-        Element reviewBox = doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first();
-        boolean hasReviewBox = false;
-        if(reviewBox != null)
-            hasReviewBox = !doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileReviewList_divHeader > div.title").first().text().equals("Recipe Reviews");
-        if(likesCooks)
-            cooks.append(userID + "\n");
-        if(hasRecipeBox)
-            recipes.append(userID + "\n");
-        if(hasReviewBox)
-            reviews.append(userID + "\n");
-        profiles.append(user + "\n");
-//        System.out.println(user);
-//        System.out.println("likesCooks: " + likesCooks);
-//        System.out.println("hasRecipes: " + hasRecipeBox);
-//        System.out.println("hasReviews: " + hasReviewBox);
+        return true;
     }
 
-
-    private boolean writeProfiles(StringBuffer profiles){
-        return writeData(profiles, profileFile);
+    public boolean writeRecipes(StringBuffer input){
+        return writeData(input, "user-recipe.tsv");
     }
-    private boolean writeCooks(StringBuffer cooks){
-        return writeData(cooks, hasCooksFile);
-    }
-    private boolean writeRecipes(StringBuffer recipes){
-        return writeData(recipes, hasRecipesFile);
-    }
-    private boolean writeReviews(StringBuffer reviews){
-        return writeData(reviews, hasReviewsFile);
-    }
-
     public boolean writeData(StringBuffer input, String filename){
         try{
             BufferedWriter out = new BufferedWriter(new FileWriter(filename, true));
@@ -249,6 +211,11 @@ public class ProfileCrawler {
             logger.error(e.getMessage());
             return false;
         }
+        return true;
+    }
+
+    public boolean crawlRecipesByRecipe(){
+        // todo
         return true;
     }
 }
