@@ -43,10 +43,12 @@ public class CooksILikeCollector extends AbstractCrawler {
     public static final String cooksILikeURL = "http://allrecipes.com/my/content/cooksilike.aspx?userID=";
 
     public static void main(String args[]) throws Exception {
+//        args = new String[]{"/ufs/alejandr/recommend2/alex/ar/crawled/all/hasCooks.csv", "/ufs/alejandr/recommend2/alex/ar/crawled/all/user-cooksilike.csv"};
+        
         CooksILikeCollector collector = new CooksILikeCollector();
         
-        PrintStream out = new PrintStream("/ufs/alejandr/recommend2/alex/ar/crawled/all/user-cooksilike.csv");
-        collector.collectCooks(new File("/ufs/alejandr/recommend2/alex/ar/crawled/all/hasCooks.csv"), out);
+        PrintStream out = new PrintStream(args[1]);
+        collector.collectCooks(new File(args[0]), out);
         out.close();
         
 //        collector.collectCooks("13124128", System.out); // no cooks
