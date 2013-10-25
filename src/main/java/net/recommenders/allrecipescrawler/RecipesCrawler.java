@@ -153,12 +153,18 @@ public class RecipesCrawler {
             add("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2");
         }};
         Document doc = null;
+        double randomSleepTime = Math.random() * 978 + 176;
 
         try {
+            Thread.sleep((int)randomSleepTime);
             doc = Jsoup.connect(recipesURL).userAgent(userAgents.get((int)Math.random()*userAgents.size())).timeout(100000).get();
         }
         catch (IOException e){
             e.printStackTrace();
+        }
+        catch (InterruptedException ie){
+            logger.error(ie.getMessage());
+            ie.printStackTrace();
         }
         String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text().replace(",","");
         int pages = 1;
