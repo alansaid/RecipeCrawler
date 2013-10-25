@@ -67,9 +67,9 @@ public class ProfileCrawler {
         int inactiveUserID = 188406874;
         int emptyUserID = 13944900;
         int errUser = 13482741;
-        pc.parseProfile(errUser);
+//        pc.parseProfile(errUser);
 
-//        pc.parseProfiles(fromLine, toLine);
+        pc.parseProfiles(fromLine, toLine);
 //        pc.parseProfile(10000003);
     }
 
@@ -201,10 +201,10 @@ public class ProfileCrawler {
         if(hasReviewBox)
             reviews.append(userID + "\n");
         profiles.append(user + "\n");
-        System.out.println(user);
-        System.out.println("likesCooks: " + likesCooks);
-        System.out.println("hasRecipes: " + hasRecipeBox);
-        System.out.println("hasReviews: " + hasReviewBox);
+//        System.out.println(user);
+//        System.out.println("likesCooks: " + likesCooks);
+//        System.out.println("hasRecipes: " + hasRecipeBox);
+//        System.out.println("hasReviews: " + hasReviewBox);
     }
 
 
