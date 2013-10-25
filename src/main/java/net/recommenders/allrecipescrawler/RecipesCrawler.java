@@ -1,22 +1,23 @@
-/**
- *  RecipeCrawler - a data crawler for allrecipes.com
+
+/*
+ * RecipeCrawler - a data crawler for allrecipes.com
  *
- *         Copyright (C) 2013  Alan Said
+ *        Copyright (C) 2013  Alan Said
  *
- *  This program is free software: you can redistribute it and/or modify
- *         it under the terms of the GNU General Public License as published by
- *         the Free Software Foundation, either version 3 of the License, or
- *         (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ *        it under the terms of the GNU General Public License as published by
+ *        the Free Software Foundation, either version 3 of the License, or
+ *        (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *         but WITHOUT ANY WARRANTY; without even the implied warranty of
- *         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *         GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ *        but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *        GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *         along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * You should have received a copy of the GNU General Public License
+ *        along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package net.recommenders.allrecipescrawler;
 
 import org.jsoup.Jsoup;
@@ -159,7 +160,7 @@ public class RecipesCrawler {
         catch (IOException e){
             e.printStackTrace();
         }
-        String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text();
+        String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text().replace(",","");
         int pages = 1;
         if(!pageNums.isEmpty())
             pages = (int)Math.ceil(Double.parseDouble(pageNums.substring(pageNums.indexOf("f")+2,pageNums.indexOf(")")).trim()) / 10);
@@ -190,7 +191,6 @@ public class RecipesCrawler {
 //                    personal = "0";
                 String date = rec.select("li.recipe-list-added").text();
                 String user = userID + "\t" + url + "\t" + type + "\t" + overall + "\t" + personal + "\t" + date + "\t" + System.currentTimeMillis();
-//                System.out.println(user);
              recipesBuffer.append(user + "\n");
             }
         }
