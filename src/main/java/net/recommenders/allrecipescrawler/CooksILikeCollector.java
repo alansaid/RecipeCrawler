@@ -26,12 +26,12 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
 import org.jsoup.select.Elements;
 
 /**
@@ -43,23 +43,37 @@ public class CooksILikeCollector extends AbstractCrawler {
     public static final String cooksILikeURL = "http://allrecipes.com/my/content/cooksilike.aspx?userID=";
 
     public static void main(String args[]) throws Exception {
-//        args = new String[]{"/ufs/alejandr/recommend2/alex/ar/crawled/all/hasCooks.csv", "/ufs/alejandr/recommend2/alex/ar/crawled/all/user-cooksilike.csv"};
-        
+//        args = new String[]{"/ufs/alejandr/recommend2/alex/ar/crawled/all/hasCooks.csv", "/ufs/alejandr/recommend2/alex/ar/crawled/all/user-cooksilike2.csv", "/ufs/alejandr/recommend2/alex/ar/crawled/all/user-cooksilike.csv"};
+
+        Set<String> usersAlreadyProcessed = new HashSet<String>();
+        if (args.length > 2) {
+            BufferedReader br = new BufferedReader(new FileReader(args[2]));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                String[] toks = line.split("\t");
+                usersAlreadyProcessed.add(toks[0]);
+            }
+            br.close();
+        }
+
         CooksILikeCollector collector = new CooksILikeCollector();
-        
+
         PrintStream out = new PrintStream(args[1]);
-        collector.collectCooks(new File(args[0]), out);
+        collector.collectCooks(new File(args[0]), out, usersAlreadyProcessed);
         out.close();
-        
+
 //        collector.collectCooks("13124128", System.out); // no cooks
 //        collector.collectCooks("10983665", System.out); // 55 cooks
     }
 
-    public boolean collectCooks(File f, PrintStream out) throws IOException {
+    public boolean collectCooks(File f, PrintStream out, Set<String> usersToIgnore) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(f));
         String line = null;
         while ((line = br.readLine()) != null) {
             String user = line;
+            if (usersToIgnore.contains(user)) {
+                continue;
+            }
             collectCooks(user, out);
         }
         br.close();
@@ -105,24 +119,15 @@ public class CooksILikeCollector extends AbstractCrawler {
                 }
             }
         } catch (IOException e) {
+            logger.error("Problem with user " + user + " in page " + page);
             logger.error(e.getMessage());
+            System.out.println("Problem with user " + user + " in page " + page);
             e.printStackTrace();
         } catch (InterruptedException ie) {
+            logger.error("Problem with user " + user + " in page " + page);
             logger.error(ie.getMessage());
+            System.out.println("Problem with user " + user + " in page " + page);
             ie.printStackTrace();
-        }
-        return true;
-    }
-
-    public boolean writeUsers(StringBuffer userIDs) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("users.csv", true));
-            out.write(userIDs.toString());
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return false;
         }
         return true;
     }
