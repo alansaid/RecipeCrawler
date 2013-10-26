@@ -104,16 +104,6 @@ public class CookCollector extends AbstractCrawler {
     }
 
     public boolean writeUsers(StringBuffer userIDs){
-        try{
-            BufferedWriter out = new BufferedWriter(new FileWriter("users.csv", true));
-            out.write(userIDs.toString());
-            out.flush();
-            out.close();
-        }
-        catch (IOException e){
-            logger.error(e.getMessage());
-            return false;
-        }
-        return true;
+        return writeData(userIDs, "users.csv");
     }
 }

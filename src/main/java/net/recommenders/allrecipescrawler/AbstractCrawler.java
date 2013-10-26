@@ -1,5 +1,11 @@
 package net.recommenders.allrecipescrawler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,4 +45,20 @@ public class AbstractCrawler {
             add("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2");
         }
     };
+
+    private final static Logger logger = LoggerFactory.getLogger(AbstractCrawler.class);
+
+    public boolean writeData(StringBuffer input, String filename) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(filename, true));
+            out.write(input.toString());
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
 }

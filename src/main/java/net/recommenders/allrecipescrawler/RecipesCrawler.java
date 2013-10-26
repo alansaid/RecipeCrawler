@@ -169,18 +169,6 @@ public class RecipesCrawler extends AbstractCrawler {
         return writeData(input, "user-recipe.tsv");
     }
 
-    public boolean writeData(StringBuffer input, String filename) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(filename, true));
-            out.write(input.toString());
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return false;
-        }
-        return true;
-    }
 
     public boolean crawlRecipesByRecipe() {
         // todo
