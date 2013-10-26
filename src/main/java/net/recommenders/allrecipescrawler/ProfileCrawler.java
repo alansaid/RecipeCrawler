@@ -208,17 +208,5 @@ public class ProfileCrawler extends AbstractCrawler {
         return writeData(reviews, hasReviewsFile);
     }
 
-    public boolean writeData(StringBuffer input, String filename){
-        try{
-            BufferedWriter out = new BufferedWriter(new FileWriter(filename, true));
-            out.write(input.toString());
-            out.flush();
-            out.close();
-        }
-        catch (IOException e){
-            logger.error(e.getMessage());
-            return false;
-        }
-        return true;
-    }
+
 }

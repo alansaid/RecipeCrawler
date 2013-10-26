@@ -35,7 +35,7 @@ import java.util.Set;
 import org.jsoup.select.Elements;
 
 /**
- * Created with IntelliJ IDEA. User: alan Date: 2013-10-21 Time: 14:49
+ * User: alejandro
  */
 public class CooksILikeCollector extends AbstractCrawler {
 
