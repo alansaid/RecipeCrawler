@@ -34,31 +34,36 @@ import java.util.Scanner;
 /**
  * Created with IntelliJ IDEA. User: alan Date: 2013-10-25 Time: 13:59
  */
+
+/**
+ * Class for crawling recipe details from Allrecipes.com.
+ */
 public class RecipeCrawler extends AbstractCrawler {
 
     private final static Logger logger = LoggerFactory.getLogger(RecipeCrawler.class);
-    private StringBuffer recipeBuffer = new StringBuffer();
 
+    /**
+     * Main method for RecipeCrawler
+     * @param args
+     */
     public static void main(String[] args) {
-        System.out.println("args[0] = fromLine \t (args[1] = toLine)");
-        System.out.println("When no arguments given, all of recipeURL.csv is read");
+        System.out.println("usage: -Dfile=input_file -Dfrom=start_on_line -Dto=end_on_line)");
+        System.out.println("When no arguments given, all of recipeURL.tsv is read");
         int fromLine = 0;
         int toLine = 0;
-        if (args.length != 0) {
-            try {
-                fromLine = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                logger.info(e.getMessage());
-                System.out.println("Start from line 0");
-            }
-            try {
-                toLine = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                logger.info(e.getMessage());
-                System.out.println("Read to EOF");
-            }
-            System.out.println("Reading from line " + fromLine + " to line " + toLine);
+        try {
+            fromLine = Integer.parseInt(System.getProperty("from"));
+        } catch (NumberFormatException e) {
+            logger.info(e.getMessage());
+            System.out.println("Start from line 0");
         }
+        try {
+            toLine = Integer.parseInt("to");
+        } catch (NumberFormatException e) {
+            logger.info(e.getMessage());
+            System.out.println("Read to EOF");
+        }
+        System.out.println("Reading from line " + fromLine + " to line " + toLine);
         RecipeCrawler rc = new RecipeCrawler();
         int user1 = 169147;
         int user2 = 15278401;
@@ -68,6 +73,12 @@ public class RecipeCrawler extends AbstractCrawler {
         rc.crawlRecipesFromFile(fromLine, toLine);
     }
 
+    /**
+     * Crawl recipe details from URLs in a file.
+     * @param from  start at line _from_ in file
+     * @param to    end reading file at _to_
+     * @return  true if successful
+     */
     public boolean crawlRecipesFromFile(int from, int to) {
         int counter = 0;
         int bufferCounter = 0;
@@ -93,8 +104,8 @@ public class RecipeCrawler extends AbstractCrawler {
 
             crawlRecipeByURL(url);
             if (bufferCounter == 20) {
-                writeRecipes(recipeBuffer);
-                recipeBuffer.setLength(0);
+                writeRecipes(dataBuffer);
+                dataBuffer.setLength(0);
 
                 bufferCounter = 0;
             }
@@ -104,7 +115,7 @@ public class RecipeCrawler extends AbstractCrawler {
         System.out.println("\n");
         System.out.println("Crawled: " + (counter - from) + " cooks");
         if (bufferCounter > 0) {
-            writeRecipes(recipeBuffer);
+            writeRecipes(dataBuffer);
         }
         return true;
     }
@@ -155,7 +166,7 @@ public class RecipeCrawler extends AbstractCrawler {
 //                    personal = "0";
                 String date = rec.select("li.recipe-list-added").text();
                 String recipeContent ="";// userID + "\t" + url + "\t" + type + "\t" + overall + "\t" + personal + "\t" + date + "\t" + System.currentTimeMillis();
-                recipeBuffer.append(recipeContent + "\n");
+                dataBuffer.append(recipeContent + "\n");
             }
         }
         return true;
