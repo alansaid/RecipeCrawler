@@ -47,6 +47,8 @@ public class AbstractCrawler {
     };
 
     private final static Logger logger = LoggerFactory.getLogger(AbstractCrawler.class);
+    public StringBuffer dataBuffer = new StringBuffer();
+
 
     public boolean writeData(StringBuffer input, String filename) {
         try {
