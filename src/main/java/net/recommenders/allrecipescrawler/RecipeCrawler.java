@@ -29,6 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
+import java.nio.charset.Charset;
+import java.util.Iterator;
 import java.util.Scanner;
 
 /**
@@ -41,6 +45,8 @@ import java.util.Scanner;
 public class RecipeCrawler extends AbstractCrawler {
 
     private final static Logger logger = LoggerFactory.getLogger(RecipeCrawler.class);
+    private static String fileName = "recipeURL.tsv";
+    public StringBuffer ingredientBuffer = new StringBuffer();
 
     /**
      * Main method for RecipeCrawler
@@ -48,9 +54,9 @@ public class RecipeCrawler extends AbstractCrawler {
      */
     public static void main(String[] args) {
         System.out.println("usage: -Dfile=input_file -Dfrom=start_on_line -Dto=end_on_line)");
-        System.out.println("When no arguments given, all of recipeURL.tsv is read");
+        System.out.println("When no arguments given, all of "+fileName+" is read");
         int fromLine = 0;
-        int toLine = 0;
+        int  toLine = 0;
         try {
             fromLine = Integer.parseInt(System.getProperty("from"));
         } catch (NumberFormatException e) {
@@ -63,13 +69,15 @@ public class RecipeCrawler extends AbstractCrawler {
             logger.info(e.getMessage());
             System.out.println("Read to EOF");
         }
-        System.out.println("Reading from line " + fromLine + " to line " + toLine);
+
+        try {
+            fileName = System.getProperty("file");
+        } catch (NullPointerException e){
+            System.out.println("Reading from recipeURL.tsv");
+        }
+        System.out.println("Reading "+ fileName+" from line " + fromLine + " to line " + toLine);
         RecipeCrawler rc = new RecipeCrawler();
-        int user1 = 169147;
-        int user2 = 15278401;
-        int user3 = 10160078;
-        int user4 = 13587363;
-//        rc.crawlRecipesByUser(user4);
+
         rc.crawlRecipesFromFile(fromLine, toLine);
     }
 
@@ -84,7 +92,7 @@ public class RecipeCrawler extends AbstractCrawler {
         int bufferCounter = 0;
         Scanner in = null;
         try {
-            in = new Scanner(new File("recipeURL.csv"));
+            in = new Scanner(new File(fileName));
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -98,24 +106,27 @@ public class RecipeCrawler extends AbstractCrawler {
             if (to != 0 && counter > to) {
                 break;
             }
-            String url = in.nextLine();
-            System.out.print("\rCrawling line: " + counter + "\t profileID: " + url);
+            String url = in.nextLine().split("\t")[1];
+            System.out.print("\rCrawling line: " + counter + "\t URL: " + url);
             System.out.flush();
 
             crawlRecipeByURL(url);
             if (bufferCounter == 20) {
+                System.out.println("\n" + ingredientBuffer);
                 writeRecipes(dataBuffer);
                 dataBuffer.setLength(0);
-
+                writeIngredients(ingredientBuffer);
+                ingredientBuffer.setLength(0);
                 bufferCounter = 0;
             }
             counter++;
             bufferCounter++;
         }
         System.out.println("\n");
-        System.out.println("Crawled: " + (counter - from) + " cooks");
+        System.out.println("Crawled: " + (counter - from) + " recipes");
         if (bufferCounter > 0) {
             writeRecipes(dataBuffer);
+            writeIngredients(ingredientBuffer);
         }
         return true;
     }
@@ -123,62 +134,50 @@ public class RecipeCrawler extends AbstractCrawler {
     public boolean crawlRecipeByURL(String recipeURL) {
         Document doc = null;
         double randomSleepTime = Math.random() * 1278 + 576;
-
         try {
             Thread.sleep((int) randomSleepTime);
             doc = Jsoup.connect(recipeURL).userAgent(USER_AGENTS.get((int) Math.random() * USER_AGENTS.size())).timeout(100000).get();
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException ie) {
             logger.error(ie.getMessage());
             ie.printStackTrace();
         }
-        String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text().replace(",", "");
-        int pages = 1;
-        if (!pageNums.isEmpty()) {
-            pages = (int) Math.ceil(Double.parseDouble(pageNums.substring(pageNums.indexOf("f") + 2, pageNums.indexOf(")")).trim()) / 10);
-        }
 
+        String title = doc.select("h1#itemTitle").text();
+        String author = doc.select("span#lblSubmitter").text();
+        String authorID = doc.select("span#lblSubmitter > a").attr("href");
+        if(!authorID.isEmpty())
+            authorID = authorID.substring(authorID.lastIndexOf("k")+2, authorID.lastIndexOf("/"));
 
-        for (int i = 1; i <= pages; i++) {
-            if (i > 1) {
-                try {
-                    doc = Jsoup.connect(recipeURL + i).userAgent(USER_AGENTS.get((int) Math.random() * USER_AGENTS.size())).timeout(100000).get();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            Element recipe = doc.select("div.recipelistview-container > div.row").first();
-            Elements recipes = recipe.siblingElements();
-            recipes.add(recipe);
-            for (Element rec : recipes) {
-                if (rec.hasClass("clear")) {
-                    continue;
-                }
-                String url = rec.select("a.title").first().attr("href").replace("/detail.aspx", "");
-                String type = rec.select("li.recipe-list-type").text();
-                String overall = rec.select("div.rating-stars").first().select("meta[itemprop=ratingValue]").attr("content");
-                if (overall.equals("0")) {
-                    overall = "";
-                }
-                String personal = rec.select("div.rating-stars").last().select("meta[itemprop=ratingValue]").attr("content");
-//                if(personal.equals("0"))
-//                    personal = "0";
-                String date = rec.select("li.recipe-list-added").text();
-                String recipeContent ="";// userID + "\t" + url + "\t" + type + "\t" + overall + "\t" + personal + "\t" + date + "\t" + System.currentTimeMillis();
-                dataBuffer.append(recipeContent + "\n");
-            }
+        String time = null;
+        try {
+            time = new String(doc.select("span.time").text().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            logger.info(e.getMessage());
+            e.printStackTrace();
         }
+        String servings = doc.select("span#lblYield").text();
+
+        Elements ingredients = doc.select("ul.ingredient-wrap").select("li#liIngredient");
+
+        String ing = "";
+        for (Element ingredient : ingredients){
+            ing = ingredient.select("span#lblIngName").text() + "\t" + ingredient.attr("data-ingredientid") + "\t" + ingredient.select("span#lblIngAmount").text();
+            ingredientBuffer.append(recipeURL + "\t" + ing + "\n");
+        }
+        dataBuffer.append(recipeURL + "\t" + title + "\t" + servings + "\t" + author + "\t" + authorID + "\t" + time + "\n");
+
         return true;
     }
 
     public boolean writeRecipes(StringBuffer input) {
-        return writeData(input, "user-recipe.tsv");
+        return writeData(input, "recipes.tsv");
     }
 
-
-    public boolean crawlRecipesByRecipe() {
-        // todo
-        return true;
+    public boolean writeIngredients(StringBuffer input){
+        return writeData(input, "ingredients.tsv");
     }
+
 }
