@@ -112,7 +112,6 @@ public class RecipeCrawler extends AbstractCrawler {
 
             crawlRecipeByURL(url);
             if (bufferCounter == 20) {
-                System.out.println("\n" + ingredientBuffer);
                 writeRecipes(dataBuffer);
                 dataBuffer.setLength(0);
                 writeIngredients(ingredientBuffer);
