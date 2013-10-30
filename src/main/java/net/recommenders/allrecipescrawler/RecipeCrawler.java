@@ -20,6 +20,7 @@
 
 package net.recommenders.allrecipescrawler;
 
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -137,12 +138,16 @@ public class RecipeCrawler extends AbstractCrawler {
             Thread.sleep((int) randomSleepTime);
             doc = Jsoup.connect(recipeURL).userAgent(USER_AGENTS.get((int) Math.random() * USER_AGENTS.size())).timeout(100000).get();
 
-        } catch (IOException e) {
+        }
+        catch (HttpStatusException he){
+            he.printStackTrace();
+        }catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException ie) {
             logger.error(ie.getMessage());
             ie.printStackTrace();
         }
+
 
         String title = doc.select("h1#itemTitle").text();
         String author = doc.select("span#lblSubmitter").text();
