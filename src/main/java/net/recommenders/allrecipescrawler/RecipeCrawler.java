@@ -140,7 +140,7 @@ public class RecipeCrawler extends AbstractCrawler {
 
         }
         catch (HttpStatusException he){
-            he.printStackTrace();
+//            he.printStackTrace();
             dataBuffer.append(recipeURL + "\t" + "404\n");
             return false;
         }catch (IOException e) {
