@@ -87,6 +87,9 @@ public class ProfileCrawler extends AbstractCrawler {
 //        pc.parseProfile(10000003);
     }
 
+    public boolean parseProfiles(){
+        return parseProfiles(0,0);
+    }
     public boolean parseProfiles(int from, int to){
         int counter = 0;
         int bufferCounter = 0;
@@ -137,18 +140,12 @@ public class ProfileCrawler extends AbstractCrawler {
 
     public void parseProfile(int userID){
         Document doc = null;
-        double randomSleepTime = Math.random() * 978 + 176;
 
         try {
-            Thread.sleep((int)randomSleepTime);
             doc = Jsoup.connect(profileURL + userID).userAgent(USER_AGENTS.get((int)Math.random()*USER_AGENTS.size())).timeout(100000).get();
         }
         catch (IOException e){
             e.printStackTrace();
-        }
-        catch (InterruptedException ie){
-            logger.error(ie.getMessage());
-            ie.printStackTrace();
         }
         boolean proUser = !doc.select("a.proPill35x12").isEmpty();
         String name = doc.select("div#ctl00_CenterColumnPlaceHolder_ucProfileDetails_cooksName_litName").text();

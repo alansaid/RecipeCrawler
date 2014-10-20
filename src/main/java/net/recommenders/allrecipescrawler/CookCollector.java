@@ -54,17 +54,11 @@ public class CookCollector extends AbstractCrawler {
         int userCounter = 0;
         StringBuffer userIDs = new StringBuffer();
         for(int page = 1; page <= 8585; page++){
-            double randomSleepTime = Math.random() * 5678 + 3876;
             try {
-                Thread.sleep((int)randomSleepTime);
                 doc = Jsoup.connect(cooksURL+page).userAgent(USER_AGENTS.get((int)Math.random()*USER_AGENTS.size())).timeout(100000).get();
             } catch (IOException e) {
                 logger.error(e.getMessage());
                 e.printStackTrace();
-            }
-            catch (InterruptedException ie){
-                logger.error(ie.getMessage());
-                ie.printStackTrace();
             }
             for (int i = 1; i<=39; i=i+2){
                 String id;

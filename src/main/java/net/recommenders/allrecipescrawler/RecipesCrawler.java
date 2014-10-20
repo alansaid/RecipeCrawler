@@ -69,6 +69,9 @@ public class RecipesCrawler extends AbstractCrawler {
         rc.crawlRecipesByUserFromFile(fromLine, toLine);
     }
 
+    public boolean crawlRecipesByUserFromFile(){
+        return crawlRecipesByUserFromFile(0,0);
+    }
     public boolean crawlRecipesByUserFromFile(int from, int to) {
         int counter = 0;
         int bufferCounter = 0;
@@ -113,16 +116,11 @@ public class RecipesCrawler extends AbstractCrawler {
     public boolean crawlRecipesByUser(int userID) {
         String recipesURL = baseURL + userID + recipeURL;
         Document doc = null;
-        double randomSleepTime = Math.random() * 1278 + 576;
 
         try {
-            Thread.sleep((int) randomSleepTime);
             doc = Jsoup.connect(recipesURL).userAgent(USER_AGENTS.get((int) Math.random() * USER_AGENTS.size())).timeout(100000).get();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException ie) {
-            logger.error(ie.getMessage());
-            ie.printStackTrace();
         }
         String pageNums = doc.select("div#ctl00_CenterColumnPlaceHolder_RecipePage_pager_corePager > div.page_display").text().replace(",", "");
         int pages = 1;
