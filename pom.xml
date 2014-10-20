@@ -37,7 +37,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>net.recommenders.allrecipescrawler.CollectData</mainClass>
+                    <mainClass>net.recommenders.allrecipescrawler.DataCollector</mainClass>
                 </configuration>
                 <version>1.2</version>
             </plugin>

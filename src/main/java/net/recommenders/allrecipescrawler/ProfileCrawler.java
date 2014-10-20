@@ -1,5 +1,5 @@
 /**
- *  RecipesCrawler - a data crawler for allrecipes.com
+ *  RecipeBoxCrawler - a data crawler for allrecipes.com
  *
  *         Copyright (C) 2013  Alan Said
  *

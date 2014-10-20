@@ -39,7 +39,7 @@ import java.util.Scanner;
 public class RecipeCrawler extends AbstractCrawler {
 
     private final static Logger logger = LoggerFactory.getLogger(RecipeCrawler.class);
-    private static String fileName = "recipeURL.tsv";
+    private static String fileName = "recipeURLs.tsv";
     public StringBuffer ingredientBuffer = new StringBuffer();
     public StringBuffer nutrientBuffer = new StringBuffer();
 
@@ -77,6 +77,10 @@ public class RecipeCrawler extends AbstractCrawler {
 
     }
 
+
+    public void crawlRecipesFromFile(){
+        crawlRecipesFromFile(0,0);
+    }
     /**
      * Crawl recipe details from URLs in a file.
      * @param from  start at line _from_ in file
@@ -103,7 +107,7 @@ public class RecipeCrawler extends AbstractCrawler {
             if (to != 0 && counter > to) {
                 break;
             }
-            String url = in.nextLine().split("\t")[1];
+            String url = in.nextLine();//.split("\t")[1];
             System.out.print("\rCrawling line: " + counter + "\t URL: " + url);
             System.out.flush();
 

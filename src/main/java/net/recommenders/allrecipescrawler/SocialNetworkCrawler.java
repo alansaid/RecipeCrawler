@@ -1,5 +1,5 @@
 /**
- * RecipesCrawler - a data crawler for allrecipes.com
+ * RecipeBoxCrawler - a data crawler for allrecipes.com
  *
  * Copyright (C) 2013 Alan Said
  *
@@ -33,9 +33,9 @@ import java.util.Set;
 /**
  * User: alejandro
  */
-public class CooksILikeCollector extends AbstractCrawler {
+public class SocialNetworkCrawler extends AbstractCrawler {
 
-    private final static Logger logger = LoggerFactory.getLogger(CooksILikeCollector.class);
+    private final static Logger logger = LoggerFactory.getLogger(SocialNetworkCrawler.class);
     public static final String cooksILikeURL = "http://allrecipes.com/my/content/cooksilike.aspx?userID=";
 
     public static void main(String args[]) throws Exception {
@@ -52,7 +52,7 @@ public class CooksILikeCollector extends AbstractCrawler {
             br.close();
         }
 
-        CooksILikeCollector collector = new CooksILikeCollector();
+        SocialNetworkCrawler collector = new SocialNetworkCrawler();
 
         PrintStream out = new PrintStream(args[1]);
         collector.collectCooks(new File(args[0]), out, usersAlreadyProcessed);

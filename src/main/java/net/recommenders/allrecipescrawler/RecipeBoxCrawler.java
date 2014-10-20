@@ -28,17 +28,22 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * Class for scraping the recipes users have in their recipe boxes
  */
-public class RecipesCrawler extends AbstractCrawler {
+public class RecipeBoxCrawler extends AbstractCrawler {
 
-    private final static Logger logger = LoggerFactory.getLogger(RecipesCrawler.class);
+    private final static Logger logger = LoggerFactory.getLogger(RecipeBoxCrawler.class);
     public static final String recipeURL = "/recipes.aspx?Page=";
     public static final String baseURL = "http://allrecipes.com/cook/";
     private StringBuffer recipesBuffer = new StringBuffer();
+    private StringBuffer urlBuffer = new StringBuffer();
+    private Set<String> uniqeRecipes = new HashSet<String>();
 
     public static void main(String[] args) {
         System.out.println("args[0] = fromLine \t (args[1] = toLine)");
@@ -60,7 +65,7 @@ public class RecipesCrawler extends AbstractCrawler {
             }
             System.out.println("Reading from line " + fromLine + " to line " + toLine);
         }
-        RecipesCrawler rc = new RecipesCrawler();
+        RecipeBoxCrawler rc = new RecipeBoxCrawler();
         int user1 = 169147;
         int user2 = 15278401;
         int user3 = 10160078;
@@ -110,6 +115,20 @@ public class RecipesCrawler extends AbstractCrawler {
         if (bufferCounter > 0) {
             writeRecipes(recipesBuffer);
         }
+        bufferCounter = 0;
+        Iterator<String> iter = uniqeRecipes.iterator();
+        while (iter.hasNext()){
+            if(bufferCounter == 20){
+                writeRecipeURLs(urlBuffer);
+                urlBuffer.setLength(0);
+                bufferCounter = 0;
+            }
+            String url = iter.next();
+            if(url.contains("/recipe/")){
+                urlBuffer.append(url + "\n");
+            }
+            bufferCounter++;
+        }
         return true;
     }
 
@@ -155,6 +174,7 @@ public class RecipesCrawler extends AbstractCrawler {
 //                    personal = "0";
                 String date = rec.select("li.recipe-list-added").text();
                 String user = userID + "\t" + url + "\t" + type + "\t" + overall + "\t" + personal + "\t" + date + "\t" + System.currentTimeMillis();
+                uniqeRecipes.add(url);
                 recipesBuffer.append(user + "\n");
             }
         }
@@ -165,6 +185,9 @@ public class RecipesCrawler extends AbstractCrawler {
         return writeData(input, "user-recipe.tsv");
     }
 
+    public boolean writeRecipeURLs(StringBuffer input){
+        return writeData(input, "recipeURLs.tsv");
+    }
 
     public boolean crawlRecipesByRecipe() {
         // todo
