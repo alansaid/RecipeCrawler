@@ -48,12 +48,14 @@ public class RecipeCrawler extends AbstractCrawler {
     private final static Logger logger = LoggerFactory.getLogger(RecipeCrawler.class);
     private static String fileName = "recipeURL.tsv";
     public StringBuffer ingredientBuffer = new StringBuffer();
+    public StringBuffer nutrientBuffer = new StringBuffer();
 
     /**
      * Main method for RecipeCrawler
      * @param args
      */
     public static void main(String[] args) {
+
         System.out.println("usage: -Dfile=input_file -Dfrom=start_on_line -Dto=end_on_line)");
         System.out.println("When no arguments given, all of "+fileName+" is read");
         int fromLine = 0;
@@ -65,21 +67,21 @@ public class RecipeCrawler extends AbstractCrawler {
             System.out.println("Start from line 0");
         }
         try {
-            toLine = Integer.parseInt("to");
+            toLine = Integer.parseInt(System.getProperty("to"));
         } catch (NumberFormatException e) {
             logger.info(e.getMessage());
             System.out.println("Read to EOF");
         }
-
         try {
             fileName = System.getProperty("file");
         } catch (NullPointerException e){
             System.out.println("Reading from recipeURL.tsv");
         }
         System.out.println("Reading "+ fileName+" from line " + fromLine + " to line " + toLine);
-        RecipeCrawler rc = new RecipeCrawler();
 
+        RecipeCrawler rc = new RecipeCrawler();
         rc.crawlRecipesFromFile(fromLine, toLine);
+
     }
 
     /**
@@ -88,9 +90,10 @@ public class RecipeCrawler extends AbstractCrawler {
      * @param to    end reading file at _to_
      * @return  true if successful
      */
-    public boolean crawlRecipesFromFile(int from, int to) {
+    public void crawlRecipesFromFile(int from, int to) {
         int counter = 0;
         int bufferCounter = 0;
+        int noNutrients = 0;
         Scanner in = null;
         try {
             in = new Scanner(new File(fileName));
@@ -111,46 +114,79 @@ public class RecipeCrawler extends AbstractCrawler {
             System.out.print("\rCrawling line: " + counter + "\t URL: " + url);
             System.out.flush();
 
-            crawlRecipeByURL(url);
+            if(!crawlRecipeByURL(url))
+                noNutrients++;
+
             if (bufferCounter == 20) {
                 writeRecipes(dataBuffer);
                 dataBuffer.setLength(0);
                 writeIngredients(ingredientBuffer);
                 ingredientBuffer.setLength(0);
+                writeNutrients(nutrientBuffer);
+                nutrientBuffer.setLength(0);
                 bufferCounter = 0;
             }
             counter++;
             bufferCounter++;
         }
         System.out.println("\n");
-        System.out.println("Crawled: " + (counter - from) + " recipes");
+        System.out.println("Crawled: " + (counter - from) + " recipes, " + noNutrients + " had no nutrition information");
         if (bufferCounter > 0) {
             writeRecipes(dataBuffer);
             writeIngredients(ingredientBuffer);
+            writeNutrients(nutrientBuffer);
         }
-        return true;
     }
 
     public boolean crawlRecipeByURL(String recipeURL) {
         Document doc = null;
-        double randomSleepTime = Math.random() * 1278 + 576;
         try {
-            Thread.sleep((int) randomSleepTime);
             doc = Jsoup.connect(recipeURL).userAgent(USER_AGENTS.get((int) Math.random() * USER_AGENTS.size())).timeout(100000).get();
 
         }
         catch (HttpStatusException he){
-//            he.printStackTrace();
             dataBuffer.append(recipeURL + "\t" + "404\n");
             return false;
         }catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException ie) {
-            logger.error(ie.getMessage());
-            ie.printStackTrace();
         }
 
+        String nutrients = scrapeNutrition(doc);
+        if(nutrients.length() == 0)
+            return false;
+        nutrientBuffer.append(recipeURL + "\t" + nutrients + "\n");
 
+
+        String basicInfo = scrapeBasics(doc);
+        dataBuffer.append(recipeURL + "\t" + basicInfo);
+
+        ingredientBuffer.append(scrapeIngredients(doc, recipeURL));
+        /*
+        Elements ingredients = doc.select("ul.ingredient-wrap").select("li#liIngredient");
+
+        String ing = "";
+        for (Element ingredient : ingredients){
+            ing = ingredient.select("span#lblIngName").text() + "\t" + ingredient.attr("data-ingredientid") + "\t" + ingredient.select("span#lblIngAmount").text();
+            ingredientBuffer.append(recipeURL + "\t" + ing + "\n");
+        }
+*/
+
+        return true;
+    }
+
+    public String scrapeIngredients(Document doc, String recipeURL){
+        Elements ingredients = doc.select("ul.ingredient-wrap").select("li#liIngredient");
+        String results = "";
+        String ing = "";
+        for (Element ingredient : ingredients){
+            ing = ingredient.select("span#lblIngName").text() + "\t" + ingredient.attr("data-ingredientid") + "\t" + ingredient.select("span#lblIngAmount").text();
+            results += recipeURL + "\t" + ing + "\n";
+//            ingredientBuffer.append(recipeURL + "\t" + ing + "\n");
+        }
+        return  results;
+    }
+
+    public String scrapeBasics(Document doc){
         String title = doc.select("h1#itemTitle").text();
         String author = doc.select("span#lblSubmitter").text();
         String authorID = doc.select("span#lblSubmitter > a").attr("href");
@@ -166,16 +202,32 @@ public class RecipeCrawler extends AbstractCrawler {
         }
         String servings = doc.select("span#lblYield").text();
 
-        Elements ingredients = doc.select("ul.ingredient-wrap").select("li#liIngredient");
+        return title + "\t" + servings + "\t" + author + "\t" + authorID + "\t" + time + "\n";
+    }
 
-        String ing = "";
-        for (Element ingredient : ingredients){
-            ing = ingredient.select("span#lblIngName").text() + "\t" + ingredient.attr("data-ingredientid") + "\t" + ingredient.select("span#lblIngAmount").text();
-            ingredientBuffer.append(recipeURL + "\t" + ing + "\n");
+    public String scrapeNutrition(Document document){
+        Elements elements = document.select("ul.nutrDetList > li > span.center");
+        String output = "";
+        for (Element element : elements){
+            String attribute = element.attr("itemprop");
+            String amount = element.text();
+            if (amount.length() == 0)
+                continue;
+            if (attribute.length() == 0 && amount.length() != 0)
+                attribute = "potassiumContent";
+            output += element.text() + "\t";
         }
-        dataBuffer.append(recipeURL + "\t" + title + "\t" + servings + "\t" + author + "\t" + authorID + "\t" + time + "\n");
 
-        return true;
+        elements = document.select("ul.nutrDetList > li > span.left");
+        for (Element element : elements){
+            String text = element.text();
+            String amount = element.lastElementSibling().text();
+            if (amount.length() == 0)
+                continue;
+            output += amount + "\t";
+
+        }
+        return output;
     }
 
     public boolean writeRecipes(StringBuffer input) {
@@ -186,4 +238,7 @@ public class RecipeCrawler extends AbstractCrawler {
         return writeData(input, "ingredients.tsv");
     }
 
+    public boolean writeNutrients(StringBuffer input){
+        return writeData(input, "nutrients.csv");
+    }
 }
