@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 /**
- * Created with IntelliJ IDEA. User: alan Date: 2013-10-25 Time: 13:59
+ * Class for scraping the recipes users have in their recipe boxes
  */
 public class RecipesCrawler extends AbstractCrawler {
 

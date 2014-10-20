@@ -34,10 +34,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 
 /**
- * Created with IntelliJ IDEA. User: alan Date: 2013-10-25 Time: 13:59
- */
-
-/**
  * Class for crawling recipe details from Allrecipes.com.
  */
 public class RecipeCrawler extends AbstractCrawler {
@@ -153,20 +149,9 @@ public class RecipeCrawler extends AbstractCrawler {
             return false;
         nutrientBuffer.append(recipeURL + "\t" + nutrients + "\n");
 
-
         String basicInfo = scrapeBasics(doc);
         dataBuffer.append(recipeURL + "\t" + basicInfo);
-
         ingredientBuffer.append(scrapeIngredients(doc, recipeURL));
-        /*
-        Elements ingredients = doc.select("ul.ingredient-wrap").select("li#liIngredient");
-
-        String ing = "";
-        for (Element ingredient : ingredients){
-            ing = ingredient.select("span#lblIngName").text() + "\t" + ingredient.attr("data-ingredientid") + "\t" + ingredient.select("span#lblIngAmount").text();
-            ingredientBuffer.append(recipeURL + "\t" + ing + "\n");
-        }
-*/
 
         return true;
     }
