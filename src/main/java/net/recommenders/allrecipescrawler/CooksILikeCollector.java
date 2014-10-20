@@ -19,20 +19,16 @@
  */
 package net.recommenders.allrecipescrawler;
 
-import java.io.BufferedReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
-import org.jsoup.select.Elements;
 
 /**
  * User: alejandro

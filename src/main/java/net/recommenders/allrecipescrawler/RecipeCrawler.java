@@ -31,9 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.Buffer;
-import java.nio.charset.Charset;
-import java.util.Iterator;
 import java.util.Scanner;
 
 /**
