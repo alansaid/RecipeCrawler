@@ -10,6 +10,7 @@
 
     <properties>
         <jsoup.version>1.7.2</jsoup.version>
+        <slf4j.version>1.6.6</slf4j.version>
     </properties>
 
     <dependencies>
@@ -21,7 +22,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.6</version>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
     <build>
